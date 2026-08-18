@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png" />
+<link rel="shortcut icon" type="image/png" href="assets/favicon.png" />
+<title>TeamsChat</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="connectionBanner">Reconnecting…</div>
+
+  <div class="app-shell">
+    <div class="rail">
+      <div class="logo-mark logo-image"><img src="assets/teamschat-logo.png" alt="TeamsChat logo" /></div>
+      <div class="rail-icon active" title="Chat">💬</div>
+      <div class="rail-spacer"></div>
+      <button class="avatar-btn" id="railAvatar" title="Account"></button>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2 id="sidebarTitle">Chats</h2>
+        <button class="icon-btn" id="newItemBtn" title="New">＋</button>
+      </div>
+
+      <div class="sidebar-tabs">
+        <button class="sidebar-tab active" id="tabGroups">Groups<span class="tab-unread-badge hidden" id="groupsBadge">0</span></button>
+        <button class="sidebar-tab" id="tabFriends">Friends<span class="tab-unread-badge hidden" id="friendsBadge">0</span></button>
+        <button class="sidebar-tab" id="tabRequests">Requests<span class="req-badge hidden" id="reqBadge">0</span></button>
+      </div>
+
+      <div class="sidebar-search hidden" id="sidebarSearchWrap">
+        <input type="text" id="sidebarSearch" placeholder="Search..." />
+      </div>
+
+      <div class="group-list" id="groupList"></div>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+      <div class="no-chat-selected" id="noChatSelected">
+        <div style="font-size:40px;">💬</div>
+        <div>Select a group or friend to start chatting</div>
+      </div>
+
+      <div id="activeChat" class="hidden" style="display:flex; flex-direction:column; height:100%;">
+        <div class="chat-header">
+          <div class="avatar-with-dot">
+            <div class="group-avatar" id="chatAvatar"></div>
+            <span class="presence-dot hidden" id="chatHeaderDot"></span>
+          </div>
+          <div>
+            <div class="g-name" id="chatGroupName"></div>
+            <div class="g-members" id="chatGroupMembers"></div>
+          </div>
+          <div style="flex:1;"></div>
+          <button class="icon-btn hidden" id="renameFriendBtn" title="Rename friend">✏️</button>
+          <button class="icon-btn hidden" id="clearChatBtn" title="Clear chat history">🗑️</button>
+          <button class="icon-btn hidden" id="manageGroupBtn" title="Manage group">⚙️</button>
+          <button class="icon-btn hidden" id="leaveGroupBtn" title="Leave group">🚪</button>
+        </div>
+
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="typing-indicator" id="typingIndicator"></div>
+
+        <div class="reply-preview hidden" id="replyPreview">
+          <div class="reply-preview-bar"></div>
+          <div class="reply-preview-body">
+            <div class="reply-preview-name" id="replyPreviewName"></div>
+            <div class="reply-preview-text" id="replyPreviewText"></div>
+          </div>
+          <button id="cancelReplyBtn" title="Cancel reply">✕</button>
+        </div>
+
+        <div class="chat-input-bar">
+          <div class="emoji-picker-wrap">
+            <button class="emoji-toggle" id="emojiToggle" title="Add emoji" type="button">😊</button>
+            <div class="emoji-picker hidden" id="emojiPicker">
+              <button type="button" data-emoji="😀" title="Smile">😀</button>
+              <button type="button" data-emoji="😂" title="Laugh">😂</button>
+              <button type="button" data-emoji="😠" title="Angry">😠</button>
+              <button type="button" data-emoji="👍" title="Thumb up">👍</button>
+              <button type="button" data-emoji="😋" title="Tasty">😋</button>
+              <button type="button" data-emoji="😢" title="Sad">😢</button>
+            </div>
+          </div>
+          <textarea id="messageInput" rows="1" placeholder="Type a message..."></textarea>
+          <button class="send-btn" id="sendBtn">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New group modal -->
+  <div class="modal-overlay hidden" id="newGroupModal">
+    <div class="modal-box">
+      <h3>Create a new group</h3>
+      <div id="newGroupAlert"></div>
+      <div class="field">
+        <label for="groupName">Group name</label>
+        <input type="text" id="groupName" placeholder="e.g. Marketing Team" />
+      </div>
+      <div class="field">
+        <label for="groupDesc">Description (optional)</label>
+        <input type="text" id="groupDesc" placeholder="What's this group about?" />
+      </div>
+      <div class="field">
+        <label for="groupMembers">Invite members by email (comma separated, optional)</label>
+        <input type="text" id="groupMembers" placeholder="alice@example.com, bob@example.com" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="cancelNewGroup">Cancel</button>
+        <button class="btn-small-primary" id="createGroupBtn">Create group</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add friend modal -->
+  <div class="modal-overlay hidden" id="addFriendModal">
+    <div class="modal-box">
+      <h3>Add a friend</h3>
+      <div id="addFriendAlert"></div>
+      <div class="field">
+        <label for="friendEmail">Email address</label>
+        <input type="email" id="friendEmail" placeholder="someone@example.com" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="cancelAddFriend">Cancel</button>
+        <button class="btn-small-primary" id="confirmAddFriend">Send request</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add member to group modal -->
+  <div class="modal-overlay hidden" id="addMemberModal">
+    <div class="modal-box">
+      <h3>Add a member</h3>
+      <div id="addMemberAlert"></div>
+      <div class="field">
+        <label for="memberEmail">Email address</label>
+        <input type="email" id="memberEmail" placeholder="someone@example.com" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="cancelAddMember">Cancel</button>
+        <button class="btn-small-primary" id="confirmAddMember">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manage group modal (admins only) -->
+  <div class="modal-overlay hidden" id="manageGroupModal">
+    <div class="modal-box" style="max-width:440px;">
+      <h3>Manage members</h3>
+      <div id="manageGroupAlert"></div>
+      <div id="manageMemberList"></div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="closeManageGroup">Close</button>
+        <button class="btn-small-primary" id="openAddMemberFromManage">Add member</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
